@@ -1,0 +1,1368 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modul Interaktif - Strategi Pembelajaran Kimia</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;family=Quicksand:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    
+    .font-heading { font-family: 'Quicksand', sans-serif; }
+    .font-body { font-family: 'Nunito', sans-serif; }
+    
+    .pastel-gradient {
+      background: linear-gradient(135deg, #fef3e2 0%, #fce7f3 25%, #e0e7ff 50%, #d1fae5 75%, #fef9c3 100%);
+    }
+    
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .nav-item {
+      transition: all 0.2s ease;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: rgba(255, 255, 255, 0.9);
+      transform: scale(1.02);
+    }
+    
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-out, padding 0.3s ease;
+    }
+    .accordion-content.open {
+      max-height: 2000px;
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+    
+    .strategy-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .strategy-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+    .strategy-card:hover::before {
+      width: 8px;
+    }
+    
+    .quiz-option {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .quiz-option:hover {
+      transform: translateX(8px);
+    }
+    .quiz-option.selected {
+      border-width: 2px;
+    }
+    .quiz-option.correct {
+      background-color: #d1fae5 !important;
+      border-color: #10b981 !important;
+    }
+    .quiz-option.incorrect {
+      background-color: #fee2e2 !important;
+      border-color: #ef4444 !important;
+    }
+    
+    .progress-ring {
+      transition: stroke-dashoffset 0.5s ease;
+    }
+    
+    .drag-item {
+      cursor: grab;
+      transition: all 0.2s ease;
+    }
+    .drag-item:active {
+      cursor: grabbing;
+      transform: scale(1.05);
+    }
+    .drag-item.dragging {
+      opacity: 0.5;
+    }
+    
+    .drop-zone {
+      transition: all 0.2s ease;
+      min-height: 60px;
+    }
+    .drop-zone.drag-over {
+      background-color: #dbeafe;
+      border-color: #3b82f6;
+      transform: scale(1.02);
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .pulse-dot {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.7; }
+    }
+    
+    .shake {
+      animation: shake 0.5s ease;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    
+    .celebration {
+      animation: celebrate 0.6s ease;
+    }
+    @keyframes celebrate {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .tab-btn {
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background-color: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .note-card {
+      transition: all 0.2s ease;
+    }
+    .note-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .section-indicator {
+      transition: all 0.3s ease;
+    }
+    .section-indicator.active {
+      width: 24px;
+      background-color: #8b5cf6;
+    }
+    .section-indicator.completed {
+      background-color: #10b981;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      ring: 2px;
+      ring-color: #a78bfa;
+    }
+
+    .tooltip {
+      position: relative;
+    }
+    .tooltip::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f2937;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .tooltip:hover::after {
+      opacity: 1;
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full font-body">
+  <div id="app" class="h-full overflow-auto pastel-gradient"><!-- Header -->
+   <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3">
+     <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+       <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center shadow-lg"><span class="text-white text-lg">🧪</span>
+       </div>
+       <div>
+        <h1 id="main-title" class="font-heading font-bold text-lg text-gray-800">Strategi Pembelajaran Kimia</h1>
+        <p id="subtitle" class="text-xs text-gray-500">Modul Interaktif</p>
+       </div>
+      </div>
+      <div class="flex items-center gap-2">
+       <div class="hidden sm:flex items-center gap-1 bg-violet-50 rounded-full px-3 py-1"><span class="text-xs text-violet-600 font-medium">Progress:</span> <span id="progress-text" class="text-xs font-bold text-violet-700">0%</span>
+       </div><button onclick="toggleNotes()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors tooltip" data-tooltip="Catatan">
+        <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg></button>
+      </div>
+     </div>
+    </div>
+   </header><!-- Section Navigation -->
+   <nav class="sticky top-16 z-40 bg-white/60 backdrop-blur-sm border-b border-white/50">
+    <div class="max-w-6xl mx-auto px-4 py-2">
+     <div class="flex gap-1 overflow-x-auto pb-1 scrollbar-hide"><button onclick="navigateToSection(0)" class="nav-item flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-gray-600 hover:text-violet-700" data-section="0"> <span class="hidden sm:inline">1. </span>Pendahuluan </button> <button onclick="navigateToSection(1)" class="nav-item flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-gray-600 hover:text-violet-700" data-section="1"> <span class="hidden sm:inline">2. </span>5 Strategi </button> <button onclick="navigateToSection(2)" class="nav-item flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-gray-600 hover:text-violet-700" data-section="2"> <span class="hidden sm:inline">3. </span>Model Pemrosesan </button> <button onclick="navigateToSection(3)" class="nav-item flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-gray-600 hover:text-violet-700" data-section="3"> <span class="hidden sm:inline">4. </span>Perbandingan </button> <button onclick="navigateToSection(4)" class="nav-item flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-gray-600 hover:text-violet-700" data-section="4"> <span class="hidden sm:inline">5. </span>Tantangan </button> <button onclick="navigateToSection(5)" class="nav-item flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-gray-600 hover:text-violet-700" data-section="5"> <span class="hidden sm:inline">6. </span>Quiz </button> <button onclick="navigateToSection(6)" class="nav-item flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium text-gray-600 hover:text-violet-700" data-section="6"> <span class="hidden sm:inline">7. </span>Refleksi </button>
+     </div>
+    </div>
+   </nav><!-- Main Content -->
+   <main class="max-w-6xl mx-auto px-4 py-6"><!-- Section 1: Introduction -->
+    <section id="section-0" class="mb-8 fade-in">
+     <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+      <div class="bg-gradient-to-r from-rose-200 via-pink-200 to-violet-200 p-6">
+       <div class="flex items-center gap-2 mb-2"><span class="bg-white/80 text-rose-600 text-xs font-bold px-2 py-1 rounded-full">BAGIAN 1</span> <span class="pulse-dot w-2 h-2 bg-rose-400 rounded-full"></span>
+       </div>
+       <h2 class="font-heading text-2xl font-bold text-gray-800 mb-2">Mengapa Strategi Pembelajaran Penting dalam Kimia?</h2>
+       <p class="text-gray-600 text-sm">Memahami pentingnya pemilihan strategi yang tepat</p>
+      </div>
+      <div class="p-6"><!-- Problem Case -->
+       <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-5 mb-6 border-l-4 border-amber-400">
+        <div class="flex items-start gap-3"><span class="text-2xl">💡</span>
+         <div>
+          <h3 class="font-heading font-bold text-gray-800 mb-2">Pemantik Masalah</h3>
+          <div class="bg-white/80 rounded-lg p-4 mb-4">
+           <p class="text-gray-700 text-sm leading-relaxed">Seorang guru mengajarkan <strong>stoikiometri</strong> selama 2 jam menggunakan ceramah dan latihan soal.</p>
+           <div class="mt-3 flex items-center gap-2"><span class="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full"> 📊 Hasil: 80% siswa salah memahami konsep mol </span>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div><!-- Reflective Questions -->
+       <div class="mb-6">
+        <h4 class="font-heading font-bold text-gray-800 mb-4 flex items-center gap-2"><span class="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center text-violet-600">❓</span> Pertanyaan Reflektif</h4>
+        <div class="grid gap-3">
+         <div class="bg-violet-50 rounded-xl p-4 card-hover cursor-pointer" onclick="toggleReflection(this)">
+          <div class="flex items-center justify-between">
+           <p class="text-gray-700 font-medium">1. Apakah masalahnya pada siswa?</p>
+           <svg class="w-5 h-5 text-violet-400 transform transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+           </svg>
+          </div>
+          <div class="reflection-answer hidden mt-3 pt-3 border-t border-violet-200">
+           <p class="text-sm text-gray-600">Belum tentu! Siswa mungkin memiliki kemampuan yang baik, tetapi cara penyampaian materi yang kurang tepat dapat menghambat pemahaman mereka.</p>
+          </div>
+         </div>
+         <div class="bg-pink-50 rounded-xl p-4 card-hover cursor-pointer" onclick="toggleReflection(this)">
+          <div class="flex items-center justify-between">
+           <p class="text-gray-700 font-medium">2. Atau pada strategi pembelajarannya?</p>
+           <svg class="w-5 h-5 text-pink-400 transform transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+           </svg>
+          </div>
+          <div class="reflection-answer hidden mt-3 pt-3 border-t border-pink-200">
+           <p class="text-sm text-gray-600">Kemungkinan besar! Stoikiometri adalah materi abstrak yang membutuhkan lebih dari sekadar ceramah untuk dipahami dengan baik.</p>
+          </div>
+         </div>
+         <div class="bg-teal-50 rounded-xl p-4 card-hover cursor-pointer" onclick="toggleReflection(this)">
+          <div class="flex items-center justify-between">
+           <p class="text-gray-700 font-medium">3. Apakah semua materi kimia cocok diajarkan dengan cara yang sama?</p>
+           <svg class="w-5 h-5 text-teal-400 transform transition-transform" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+           </svg>
+          </div>
+          <div class="reflection-answer hidden mt-3 pt-3 border-t border-teal-200">
+           <p class="text-sm text-gray-600">Tidak! Setiap materi memiliki karakteristik berbeda dan membutuhkan pendekatan yang disesuaikan.</p>
+          </div>
+         </div>
+        </div>
+       </div><!-- Discussion Activity -->
+       <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200">
+        <div class="flex items-center gap-3 mb-3"><span class="text-2xl">👥</span>
+         <h4 class="font-heading font-bold text-emerald-800">Aktivitas Diskusi</h4>
+        </div>
+        <p class="text-gray-700 text-sm mb-4">Diskusikan dalam kelompok kecil (5 menit)</p>
+        <div class="flex items-center gap-3"><button onclick="startTimer(5)" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg> Mulai Timer </button> <span id="timer-display" class="font-mono text-lg font-bold text-emerald-700">05:00</span>
+        </div>
+       </div><button onclick="completeSection(0)" class="mt-6 w-full bg-gradient-to-r from-violet-500 to-pink-500 text-white py-3 rounded-xl font-bold hover:opacity-90 transition-opacity"> ✓ Selesaikan Bagian Ini </button>
+      </div>
+     </div>
+    </section><!-- Section 2: Five Learning Strategies -->
+    <section id="section-1" class="mb-8 fade-in">
+     <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+      <div class="bg-gradient-to-r from-blue-200 via-indigo-200 to-violet-200 p-6">
+       <div class="flex items-center gap-2 mb-2"><span class="bg-white/80 text-blue-600 text-xs font-bold px-2 py-1 rounded-full">BAGIAN 2</span>
+       </div>
+       <h2 class="font-heading text-2xl font-bold text-gray-800 mb-2">Lima Strategi Pembelajaran</h2>
+       <p class="text-gray-600 text-sm">Tidak hanya membaca, tetapi mengalami setiap strategi</p>
+      </div>
+      <div class="p-6"><!-- Strategy Tabs -->
+       <div class="flex flex-wrap gap-2 mb-6 bg-gray-100 p-1 rounded-xl"><button onclick="showStrategy(0)" class="tab-btn strategy-tab flex-1 min-w-fit px-4 py-2 rounded-lg text-sm font-medium transition-all active" data-strategy="0"> 1️⃣ Direct </button> <button onclick="showStrategy(1)" class="tab-btn strategy-tab flex-1 min-w-fit px-4 py-2 rounded-lg text-sm font-medium transition-all" data-strategy="1"> 2️⃣ Indirect </button> <button onclick="showStrategy(2)" class="tab-btn strategy-tab flex-1 min-w-fit px-4 py-2 rounded-lg text-sm font-medium transition-all" data-strategy="2"> 3️⃣ Interactive </button> <button onclick="showStrategy(3)" class="tab-btn strategy-tab flex-1 min-w-fit px-4 py-2 rounded-lg text-sm font-medium transition-all" data-strategy="3"> 4️⃣ Experiential </button> <button onclick="showStrategy(4)" class="tab-btn strategy-tab flex-1 min-w-fit px-4 py-2 rounded-lg text-sm font-medium transition-all" data-strategy="4"> 5️⃣ Independent </button>
+       </div><!-- Strategy Content Containers -->
+       <div id="strategy-content"><!-- Strategy 1: Direct Instruction -->
+        <div class="strategy-panel" data-panel="0">
+         <div class="strategy-card bg-gradient-to-r from-rose-50 to-pink-50 rounded-xl p-5 border border-rose-200" style="border-left: 4px solid #f43f5e;">
+          <div class="flex items-center gap-3 mb-4"><span class="text-3xl">📚</span>
+           <div>
+            <h3 class="font-heading text-xl font-bold text-gray-800">Direct Instruction</h3>
+            <p class="text-sm text-gray-500">Strategi Eksplisit dan Terstruktur</p>
+           </div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4 mb-4">
+           <div class="bg-white/80 rounded-lg p-4">
+            <h4 class="font-bold text-gray-700 mb-2 text-sm">📋 Karakteristik:</h4>
+            <ul class="space-y-1 text-sm text-gray-600">
+             <li class="flex items-center gap-2"><span class="text-rose-500">•</span> Guru aktif menjelaskan</li>
+             <li class="flex items-center gap-2"><span class="text-rose-500">•</span> Langkah sistematis</li>
+             <li class="flex items-center gap-2"><span class="text-rose-500">•</span> Cocok untuk prosedur matematis</li>
+            </ul>
+           </div>
+           <div class="bg-white/80 rounded-lg p-4">
+            <h4 class="font-bold text-gray-700 mb-2 text-sm">🎯 Studi Kasus:</h4>
+            <p class="text-sm text-gray-600">Topik: <strong>Perhitungan pH larutan kuat</strong></p>
+           </div>
+          </div><!-- Interactive Observation Table -->
+          <div class="bg-white rounded-lg p-4 mb-4">
+           <h4 class="font-bold text-gray-700 mb-3 text-sm">📝 Tabel Observasi Simulasi Mengajar</h4>
+           <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+             <thead>
+              <tr class="bg-rose-100">
+               <th class="px-3 py-2 text-left rounded-tl-lg">Komponen</th>
+               <th class="px-3 py-2 text-center">Ada/Tidak</th>
+               <th class="px-3 py-2 text-left rounded-tr-lg">Catatan</th>
+              </tr>
+             </thead>
+             <tbody>
+              <tr class="border-b border-rose-100">
+               <td class="px-3 py-2">Tujuan jelas</td>
+               <td class="px-3 py-2 text-center"><input type="checkbox" class="w-4 h-4 rounded text-rose-500" onchange="updateObservation('direct', 0, this.checked)"></td>
+               <td class="px-3 py-2"><input type="text" placeholder="Tulis catatan..." class="w-full px-2 py-1 text-xs border border-gray-200 rounded" onchange="updateObservationNote('direct', 0, this.value)"></td>
+              </tr>
+              <tr class="border-b border-rose-100">
+               <td class="px-3 py-2">Penjelasan runtut</td>
+               <td class="px-3 py-2 text-center"><input type="checkbox" class="w-4 h-4 rounded text-rose-500" onchange="updateObservation('direct', 1, this.checked)"></td>
+               <td class="px-3 py-2"><input type="text" placeholder="Tulis catatan..." class="w-full px-2 py-1 text-xs border border-gray-200 rounded" onchange="updateObservationNote('direct', 1, this.value)"></td>
+              </tr>
+              <tr class="border-b border-rose-100">
+               <td class="px-3 py-2">Contoh konkret</td>
+               <td class="px-3 py-2 text-center"><input type="checkbox" class="w-4 h-4 rounded text-rose-500" onchange="updateObservation('direct', 2, this.checked)"></td>
+               <td class="px-3 py-2"><input type="text" placeholder="Tulis catatan..." class="w-full px-2 py-1 text-xs border border-gray-200 rounded" onchange="updateObservationNote('direct', 2, this.value)"></td>
+              </tr>
+              <tr>
+               <td class="px-3 py-2">Latihan bertahap</td>
+               <td class="px-3 py-2 text-center"><input type="checkbox" class="w-4 h-4 rounded text-rose-500" onchange="updateObservation('direct', 3, this.checked)"></td>
+               <td class="px-3 py-2"><input type="text" placeholder="Tulis catatan..." class="w-full px-2 py-1 text-xs border border-gray-200 rounded" onchange="updateObservationNote('direct', 3, this.value)"></td>
+              </tr>
+             </tbody>
+            </table>
+           </div>
+          </div><!-- Metacognitive Reflection -->
+          <div class="bg-amber-50 rounded-lg p-4 border border-amber-200">
+           <h4 class="font-bold text-amber-800 mb-2 text-sm flex items-center gap-2"><span>🤔</span> Refleksi Metakognitif</h4>
+           <div class="space-y-2">
+            <p class="text-sm text-gray-700">• Kapan strategi ini efektif?</p>
+            <p class="text-sm text-gray-700">• Apa risikonya jika digunakan terus-menerus?</p>
+           </div>
+          </div>
+         </div>
+        </div><!-- Strategy 2: Indirect Instruction -->
+        <div class="strategy-panel hidden" data-panel="1">
+         <div class="strategy-card bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-5 border border-violet-200" style="border-left: 4px solid #8b5cf6;">
+          <div class="flex items-center gap-3 mb-4"><span class="text-3xl">🔬</span>
+           <div>
+            <h3 class="font-heading text-xl font-bold text-gray-800">Indirect Instruction</h3>
+            <p class="text-sm text-gray-500">Inkuiri &amp; Penemuan</p>
+           </div>
+          </div>
+          <div class="bg-white/80 rounded-lg p-4 mb-4">
+           <h4 class="font-bold text-gray-700 mb-3 text-sm">📊 Studi Kasus: Faktor yang memengaruhi laju reaksi</h4>
+           <p class="text-sm text-gray-600 mb-4">Mahasiswa diberi data eksperimen suhu vs laju reaksi <strong>TANPA teori awal</strong>.</p><!-- Interactive Data Table -->
+           <div class="bg-violet-50 rounded-lg p-4 mb-4">
+            <h5 class="font-bold text-violet-700 mb-2 text-sm">Data Eksperimen:</h5>
+            <table class="w-full text-sm">
+             <thead>
+              <tr class="bg-violet-100">
+               <th class="px-3 py-2 text-center">Suhu (°C)</th>
+               <th class="px-3 py-2 text-center">Laju Reaksi (M/s)</th>
+              </tr>
+             </thead>
+             <tbody class="text-center">
+              <tr class="border-b border-violet-100">
+               <td class="py-2">25</td>
+               <td class="py-2">0.5</td>
+              </tr>
+              <tr class="border-b border-violet-100">
+               <td class="py-2">35</td>
+               <td class="py-2">1.0</td>
+              </tr>
+              <tr class="border-b border-violet-100">
+               <td class="py-2">45</td>
+               <td class="py-2">2.1</td>
+              </tr>
+              <tr class="border-b border-violet-100">
+               <td class="py-2">55</td>
+               <td class="py-2">4.3</td>
+              </tr>
+              <tr>
+               <td class="py-2">65</td>
+               <td class="py-2">8.5</td>
+              </tr>
+             </tbody>
+            </table>
+           </div><!-- Student Tasks -->
+           <div class="space-y-3">
+            <div class="bg-white rounded-lg p-3 border border-violet-200"><label class="font-bold text-violet-700 text-sm block mb-2">1. Identifikasi Pola:</label> <textarea class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none" rows="2" placeholder="Tuliskan pola yang Anda temukan..." onchange="saveIndirectAnswer(0, this.value)"></textarea>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-violet-200"><label class="font-bold text-violet-700 text-sm block mb-2">2. Rumuskan Hipotesis:</label> <textarea class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none" rows="2" placeholder="Tuliskan hipotesis Anda..." onchange="saveIndirectAnswer(1, this.value)"></textarea>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-violet-200"><label class="font-bold text-violet-700 text-sm block mb-2">3. Buat Kesimpulan:</label> <textarea class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none" rows="2" placeholder="Tuliskan kesimpulan Anda..." onchange="saveIndirectAnswer(2, this.value)"></textarea>
+            </div>
+           </div>
+          </div>
+          <div class="bg-emerald-50 rounded-lg p-4 border border-emerald-200">
+           <h4 class="font-bold text-emerald-800 mb-2 text-sm">💬 Diskusi:</h4>
+           <p class="text-sm text-gray-700">Bandingkan pemahaman konsep antara metode ceramah vs penemuan.</p>
+          </div>
+         </div>
+        </div><!-- Strategy 3: Interactive Instruction -->
+        <div class="strategy-panel hidden" data-panel="2">
+         <div class="strategy-card bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-5 border border-teal-200" style="border-left: 4px solid #14b8a6;">
+          <div class="flex items-center gap-3 mb-4"><span class="text-3xl">👥</span>
+           <div>
+            <h3 class="font-heading text-xl font-bold text-gray-800">Interactive Instruction</h3>
+            <p class="text-sm text-gray-500">Kolaboratif &amp; Diskusi</p>
+           </div>
+          </div>
+          <div class="bg-white/80 rounded-lg p-4 mb-4">
+           <h4 class="font-bold text-gray-700 mb-3 text-sm">🧩 Studi Kasus: Korosi dalam kehidupan sehari-hari</h4>
+           <p class="text-sm text-gray-600 mb-4">Metode: <strong>Jigsaw</strong></p><!-- Jigsaw Groups -->
+           <div class="grid sm:grid-cols-2 gap-3 mb-4">
+            <div class="bg-teal-100 rounded-lg p-3 card-hover">
+             <div class="flex items-center gap-2 mb-2"><span class="w-6 h-6 bg-teal-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span> <span class="font-bold text-teal-800 text-sm">Reaksi Redoks</span>
+             </div>
+             <p class="text-xs text-gray-600">Mekanisme kimia terjadinya korosi</p>
+            </div>
+            <div class="bg-cyan-100 rounded-lg p-3 card-hover">
+             <div class="flex items-center gap-2 mb-2"><span class="w-6 h-6 bg-cyan-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span> <span class="font-bold text-cyan-800 text-sm">Dampak Ekonomi</span>
+             </div>
+             <p class="text-xs text-gray-600">Kerugian finansial akibat korosi</p>
+            </div>
+            <div class="bg-emerald-100 rounded-lg p-3 card-hover">
+             <div class="flex items-center gap-2 mb-2"><span class="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span> <span class="font-bold text-emerald-800 text-sm">Pencegahan Korosi</span>
+             </div>
+             <p class="text-xs text-gray-600">Metode proteksi dan pelindung</p>
+            </div>
+            <div class="bg-green-100 rounded-lg p-3 card-hover">
+             <div class="flex items-center gap-2 mb-2"><span class="w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-xs font-bold">4</span> <span class="font-bold text-green-800 text-sm">Implikasi Lingkungan</span>
+             </div>
+             <p class="text-xs text-gray-600">Dampak korosi terhadap ekosistem</p>
+            </div>
+           </div>
+           <div class="bg-amber-50 rounded-lg p-3 border border-amber-200"><span class="font-bold text-amber-800 text-sm">📊 Output: </span> <span class="text-sm text-gray-700">Infografis Konsep</span>
+           </div>
+          </div>
+          <div class="bg-pink-50 rounded-lg p-4 border border-pink-200">
+           <h4 class="font-bold text-pink-800 mb-2 text-sm">🤔 Refleksi:</h4>
+           <ul class="text-sm text-gray-700 space-y-1">
+            <li>• Bagaimana interaksi sosial membantu elaborasi konsep?</li>
+            <li>• Apakah semua siswa aktif?</li>
+           </ul>
+          </div>
+         </div>
+        </div><!-- Strategy 4: Experiential Learning -->
+        <div class="strategy-panel hidden" data-panel="3">
+         <div class="strategy-card bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-5 border border-amber-200" style="border-left: 4px solid #f59e0b;">
+          <div class="flex items-center gap-3 mb-4"><span class="text-3xl">🧪</span>
+           <div>
+            <h3 class="font-heading text-xl font-bold text-gray-800">Experiential Learning</h3>
+            <p class="text-sm text-gray-500">Belajar dari Pengalaman</p>
+           </div>
+          </div><!-- Learning Cycle -->
+          <div class="bg-white/80 rounded-lg p-4 mb-4">
+           <h4 class="font-bold text-gray-700 mb-3 text-sm">🔄 Siklus Pembelajaran:</h4>
+           <div class="flex flex-wrap justify-center gap-2 mb-4">
+            <div class="bg-amber-100 px-4 py-2 rounded-full text-sm font-medium text-amber-800">
+             1. Pengalaman
+            </div><span class="text-amber-400 self-center">→</span>
+            <div class="bg-orange-100 px-4 py-2 rounded-full text-sm font-medium text-orange-800">
+             2. Refleksi
+            </div><span class="text-orange-400 self-center">→</span>
+            <div class="bg-yellow-100 px-4 py-2 rounded-full text-sm font-medium text-yellow-800">
+             3. Konseptualisasi
+            </div><span class="text-yellow-400 self-center">→</span>
+            <div class="bg-lime-100 px-4 py-2 rounded-full text-sm font-medium text-lime-800">
+             4. Aplikasi
+            </div>
+           </div>
+          </div><!-- Experiment Activity -->
+          <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 mb-4 border border-purple-200">
+           <h4 class="font-bold text-purple-800 mb-3 text-sm">🥬 Praktik: Eksperimen Indikator Alami (Kubis Ungu)</h4>
+           <div class="grid sm:grid-cols-3 gap-3 mb-4">
+            <div class="bg-white rounded-lg p-3 text-center"><span class="text-2xl block mb-1">🧫</span>
+             <p class="text-xs text-gray-600">Menguji beberapa larutan</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 text-center"><span class="text-2xl block mb-1">👁️</span>
+             <p class="text-xs text-gray-600">Mengamati warna</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 text-center"><span class="text-2xl block mb-1">🔗</span>
+             <p class="text-xs text-gray-600">Menghubungkan dengan teori</p>
+            </div>
+           </div><!-- Color Result Simulator -->
+           <div class="bg-white rounded-lg p-4">
+            <h5 class="font-bold text-gray-700 mb-3 text-sm">🎨 Simulasi Hasil Warna:</h5>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+             <div class="text-center">
+              <div class="w-12 h-12 mx-auto rounded-full bg-red-400 shadow-md mb-1"></div>
+              <p class="text-xs text-gray-600">Asam Kuat</p>
+              <p class="text-xs text-gray-400">pH 1-2</p>
+             </div>
+             <div class="text-center">
+              <div class="w-12 h-12 mx-auto rounded-full bg-pink-400 shadow-md mb-1"></div>
+              <p class="text-xs text-gray-600">Asam Lemah</p>
+              <p class="text-xs text-gray-400">pH 3-4</p>
+             </div>
+             <div class="text-center">
+              <div class="w-12 h-12 mx-auto rounded-full bg-purple-400 shadow-md mb-1"></div>
+              <p class="text-xs text-gray-600">Netral</p>
+              <p class="text-xs text-gray-400">pH 7</p>
+             </div>
+             <div class="text-center">
+              <div class="w-12 h-12 mx-auto rounded-full bg-green-400 shadow-md mb-1"></div>
+              <p class="text-xs text-gray-600">Basa</p>
+              <p class="text-xs text-gray-400">pH 10+</p>
+             </div>
+            </div>
+           </div>
+          </div>
+          <div class="bg-teal-50 rounded-lg p-4 border border-teal-200">
+           <h4 class="font-bold text-teal-800 mb-2 text-sm">💬 Diskusi:</h4>
+           <p class="text-sm text-gray-700">Mengapa pengalaman langsung mengurangi miskonsepsi?</p>
+          </div>
+         </div>
+        </div><!-- Strategy 5: Independent Study -->
+        <div class="strategy-panel hidden" data-panel="4">
+         <div class="strategy-card bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-5 border border-indigo-200" style="border-left: 4px solid #6366f1;">
+          <div class="flex items-center gap-3 mb-4"><span class="text-3xl">📖</span>
+           <div>
+            <h3 class="font-heading text-xl font-bold text-gray-800">Independent Study</h3>
+            <p class="text-sm text-gray-500">Belajar Mandiri Terstruktur</p>
+           </div>
+          </div>
+          <div class="bg-white/80 rounded-lg p-4 mb-4">
+           <h4 class="font-bold text-gray-700 mb-3 text-sm">📋 Tugas Proyek:</h4>
+           <div class="bg-indigo-100 rounded-lg p-4 mb-4">
+            <p class="text-sm text-gray-700">Rancang pembelajaran berbasis SSI tentang:</p>
+            <p class="font-bold text-indigo-800 mt-2">"Isu baterai lithium dan dampaknya terhadap lingkungan"</p>
+           </div>
+           <h5 class="font-bold text-gray-700 mb-3 text-sm">📝 Output yang Diharapkan:</h5>
+           <div class="space-y-3">
+            <div class="bg-white rounded-lg p-3 border border-indigo-200"><label class="font-bold text-indigo-700 text-sm block mb-2">1. Tujuan Pembelajaran:</label> <textarea class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none" rows="2" placeholder="Tuliskan tujuan pembelajaran..." onchange="saveProjectAnswer(0, this.value)"></textarea>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-indigo-200"><label class="font-bold text-indigo-700 text-sm block mb-2">2. Strategi yang Digunakan:</label> <textarea class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none" rows="2" placeholder="Tuliskan strategi yang akan digunakan..." onchange="saveProjectAnswer(1, this.value)"></textarea>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-indigo-200"><label class="font-bold text-indigo-700 text-sm block mb-2">3. Instrumen Asesmen:</label> <textarea class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none" rows="2" placeholder="Tuliskan instrumen asesmen..." onchange="saveProjectAnswer(2, this.value)"></textarea>
+            </div>
+           </div>
+          </div>
+         </div>
+        </div>
+       </div><button onclick="completeSection(1)" class="mt-6 w-full bg-gradient-to-r from-blue-500 to-violet-500 text-white py-3 rounded-xl font-bold hover:opacity-90 transition-opacity"> ✓ Selesaikan Bagian Ini </button>
+      </div>
+     </div>
+    </section><!-- Section 3: Information Processing Model -->
+    <section id="section-2" class="mb-8 fade-in">
+     <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+      <div class="bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200 p-6">
+       <div class="flex items-center gap-2 mb-2"><span class="bg-white/80 text-emerald-600 text-xs font-bold px-2 py-1 rounded-full">BAGIAN 3</span>
+       </div>
+       <h2 class="font-heading text-2xl font-bold text-gray-800 mb-2">Model Pembelajaran Pemrosesan Informasi</h2>
+       <p class="text-gray-600 text-sm">Bruce Joyce &amp; Marsha Weil</p>
+      </div>
+      <div class="p-6"><!-- Theoretical Foundation -->
+       <div class="bg-gradient-to-r from-cyan-50 to-teal-50 rounded-xl p-5 mb-6 border border-cyan-200">
+        <h3 class="font-heading font-bold text-gray-800 mb-4 flex items-center gap-2"><span class="text-xl">🧠</span> Landasan Teoretis</h3>
+        <div class="grid sm:grid-cols-2 gap-4">
+         <div>
+          <h4 class="font-bold text-cyan-700 text-sm mb-2">Berbasis Teori Kognitif:</h4>
+          <div class="flex flex-wrap gap-2"><span class="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs font-medium">Atensi</span> <span class="bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-medium">Encoding</span> <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">Penyimpanan Memori</span> <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">Retrieval</span>
+          </div>
+         </div>
+         <div>
+          <h4 class="font-bold text-cyan-700 text-sm mb-2">Model ini Menekankan:</h4>
+          <ul class="text-sm text-gray-600 space-y-1">
+           <li>• Pembentukan konsep</li>
+           <li>• Pengolahan data</li>
+           <li>• Struktur berpikir ilmiah</li>
+          </ul>
+         </div>
+        </div>
+       </div><!-- Inductive Thinking Example -->
+       <div class="bg-white rounded-xl p-5 border border-emerald-200 mb-4">
+        <h3 class="font-heading font-bold text-gray-800 mb-4 flex items-center gap-2"><span class="text-xl">💡</span> Contoh Model: Inductive Thinking</h3>
+        <p class="text-sm text-gray-600 mb-4">Topik: <strong>Sistem Koloid</strong></p><!-- Drag and Drop Classification -->
+        <div class="bg-emerald-50 rounded-lg p-4 mb-4">
+         <h4 class="font-bold text-emerald-700 text-sm mb-3">🎯 Aktivitas: Klasifikasi Interaktif</h4>
+         <p class="text-xs text-gray-600 mb-4">Seret contoh ke kategori yang tepat:</p><!-- Items to drag -->
+         <div class="flex flex-wrap gap-2 mb-4" id="drag-items">
+          <div class="drag-item bg-white px-3 py-2 rounded-lg shadow-sm text-sm cursor-grab border border-gray-200" draggable="true" data-type="larutan">
+           🧪 Larutan gula
+          </div>
+          <div class="drag-item bg-white px-3 py-2 rounded-lg shadow-sm text-sm cursor-grab border border-gray-200" draggable="true" data-type="koloid">
+           🥛 Susu
+          </div>
+          <div class="drag-item bg-white px-3 py-2 rounded-lg shadow-sm text-sm cursor-grab border border-gray-200" draggable="true" data-type="koloid">
+           🌫️ Kabut
+          </div>
+          <div class="drag-item bg-white px-3 py-2 rounded-lg shadow-sm text-sm cursor-grab border border-gray-200" draggable="true" data-type="suspensi">
+           💧 Air lumpur
+          </div>
+          <div class="drag-item bg-white px-3 py-2 rounded-lg shadow-sm text-sm cursor-grab border border-gray-200" draggable="true" data-type="larutan">
+           🧂 Air garam
+          </div>
+          <div class="drag-item bg-white px-3 py-2 rounded-lg shadow-sm text-sm cursor-grab border border-gray-200" draggable="true" data-type="koloid">
+           🧈 Mentega
+          </div>
+         </div><!-- Drop zones -->
+         <div class="grid sm:grid-cols-3 gap-3">
+          <div class="drop-zone bg-blue-50 rounded-lg p-3 border-2 border-dashed border-blue-300 min-h-24" data-category="larutan">
+           <h5 class="font-bold text-blue-700 text-sm mb-2 text-center">Larutan</h5>
+           <div class="dropped-items space-y-1"></div>
+          </div>
+          <div class="drop-zone bg-purple-50 rounded-lg p-3 border-2 border-dashed border-purple-300 min-h-24" data-category="koloid">
+           <h5 class="font-bold text-purple-700 text-sm mb-2 text-center">Koloid</h5>
+           <div class="dropped-items space-y-1"></div>
+          </div>
+          <div class="drop-zone bg-orange-50 rounded-lg p-3 border-2 border-dashed border-orange-300 min-h-24" data-category="suspensi">
+           <h5 class="font-bold text-orange-700 text-sm mb-2 text-center">Suspensi</h5>
+           <div class="dropped-items space-y-1"></div>
+          </div>
+         </div><button onclick="checkClassification()" class="mt-4 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"> Periksa Jawaban </button>
+         <div id="classification-result" class="mt-3 hidden"></div>
+        </div><!-- Definition Building -->
+        <div class="bg-amber-50 rounded-lg p-4 border border-amber-200">
+         <h4 class="font-bold text-amber-800 text-sm mb-2">📝 Rumuskan Definisi Koloid:</h4><textarea class="w-full px-3 py-2 text-sm border border-amber-200 rounded-lg resize-none bg-white" rows="3" placeholder="Berdasarkan aktivitas di atas, tuliskan definisi koloid menurut pemahaman Anda..." onchange="saveColoidDefinition(this.value)"></textarea>
+        </div>
+       </div><button onclick="completeSection(2)" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-3 rounded-xl font-bold hover:opacity-90 transition-opacity"> ✓ Selesaikan Bagian Ini </button>
+      </div>
+     </div>
+    </section><!-- Section 4: Strategy Comparison -->
+    <section id="section-3" class="mb-8 fade-in">
+     <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+      <div class="bg-gradient-to-r from-orange-200 via-amber-200 to-yellow-200 p-6">
+       <div class="flex items-center gap-2 mb-2"><span class="bg-white/80 text-orange-600 text-xs font-bold px-2 py-1 rounded-full">BAGIAN 4</span>
+       </div>
+       <h2 class="font-heading text-2xl font-bold text-gray-800 mb-2">Perbandingan Strategi</h2>
+       <p class="text-gray-600 text-sm">Analisis kesesuaian strategi dengan materi</p>
+      </div>
+      <div class="p-6">
+       <div class="bg-amber-50 rounded-xl p-5 mb-6 border border-amber-200">
+        <h3 class="font-heading font-bold text-gray-800 mb-4">📊 Matriks Analisis</h3>
+        <p class="text-sm text-gray-600 mb-4">Isi tabel berikut dengan strategi yang paling sesuai:</p>
+        <div class="overflow-x-auto">
+         <table class="w-full text-sm">
+          <thead>
+           <tr class="bg-amber-100">
+            <th class="px-3 py-2 text-left rounded-tl-lg">Materi Kimia</th>
+            <th class="px-3 py-2 text-left">Strategi Terbaik</th>
+            <th class="px-3 py-2 text-left rounded-tr-lg">Alasan Kognitif</th>
+           </tr>
+          </thead>
+          <tbody>
+           <tr class="border-b border-amber-100">
+            <td class="px-3 py-3 font-medium">Stoikiometri</td>
+            <td class="px-3 py-3"><select class="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white" onchange="saveMatrixAnswer(0, 'strategy', this.value)"> <option value="">Pilih strategi...</option> <option value="direct">Direct Instruction</option> <option value="indirect">Indirect Instruction</option> <option value="interactive">Interactive Instruction</option> <option value="experiential">Experiential Learning</option> <option value="independent">Independent Study</option> </select></td>
+            <td class="px-3 py-3"><input type="text" placeholder="Tulis alasan..." class="w-full px-2 py-1 text-xs border border-gray-200 rounded" onchange="saveMatrixAnswer(0, 'reason', this.value)"></td>
+           </tr>
+           <tr class="border-b border-amber-100">
+            <td class="px-3 py-3 font-medium">Laju Reaksi</td>
+            <td class="px-3 py-3"><select class="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white" onchange="saveMatrixAnswer(1, 'strategy', this.value)"> <option value="">Pilih strategi...</option> <option value="direct">Direct Instruction</option> <option value="indirect">Indirect Instruction</option> <option value="interactive">Interactive Instruction</option> <option value="experiential">Experiential Learning</option> <option value="independent">Independent Study</option> </select></td>
+            <td class="px-3 py-3"><input type="text" placeholder="Tulis alasan..." class="w-full px-2 py-1 text-xs border border-gray-200 rounded" onchange="saveMatrixAnswer(1, 'reason', this.value)"></td>
+           </tr>
+           <tr class="border-b border-amber-100">
+            <td class="px-3 py-3 font-medium">Kesetimbangan</td>
+            <td class="px-3 py-3"><select class="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white" onchange="saveMatrixAnswer(2, 'strategy', this.value)"> <option value="">Pilih strategi...</option> <option value="direct">Direct Instruction</option> <option value="indirect">Indirect Instruction</option> <option value="interactive">Interactive Instruction</option> <option value="experiential">Experiential Learning</option> <option value="independent">Independent Study</option> </select></td>
+            <td class="px-3 py-3"><input type="text" placeholder="Tulis alasan..." class="w-full px-2 py-1 text-xs border border-gray-200 rounded" onchange="saveMatrixAnswer(2, 'reason', this.value)"></td>
+           </tr>
+           <tr>
+            <td class="px-3 py-3 font-medium">Elektrokimia</td>
+            <td class="px-3 py-3"><select class="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white" onchange="saveMatrixAnswer(3, 'strategy', this.value)"> <option value="">Pilih strategi...</option> <option value="direct">Direct Instruction</option> <option value="indirect">Indirect Instruction</option> <option value="interactive">Interactive Instruction</option> <option value="experiential">Experiential Learning</option> <option value="independent">Independent Study</option> </select></td>
+            <td class="px-3 py-3"><input type="text" placeholder="Tulis alasan..." class="w-full px-2 py-1 text-xs border border-gray-200 rounded" onchange="saveMatrixAnswer(3, 'reason', this.value)"></td>
+           </tr>
+          </tbody>
+         </table>
+        </div>
+       </div>
+       <div class="bg-gradient-to-r from-violet-50 to-pink-50 rounded-xl p-5 border border-violet-200">
+        <h4 class="font-heading font-bold text-violet-800 mb-2 flex items-center gap-2"><span>💬</span> Diskusi Kelas</h4>
+        <p class="text-gray-700 text-sm italic">"Tidak ada strategi terbaik — yang ada adalah kesesuaian."</p>
+       </div><button onclick="completeSection(3)" class="mt-6 w-full bg-gradient-to-r from-orange-500 to-amber-500 text-white py-3 rounded-xl font-bold hover:opacity-90 transition-opacity"> ✓ Selesaikan Bagian Ini </button>
+      </div>
+     </div>
+    </section><!-- Section 5: Design Challenge -->
+    <section id="section-4" class="mb-8 fade-in">
+     <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+      <div class="bg-gradient-to-r from-pink-200 via-rose-200 to-red-200 p-6">
+       <div class="flex items-center gap-2 mb-2"><span class="bg-white/80 text-pink-600 text-xs font-bold px-2 py-1 rounded-full">BAGIAN 5</span>
+       </div>
+       <h2 class="font-heading text-2xl font-bold text-gray-800 mb-2">Tantangan Desain Pembelajaran</h2>
+       <p class="text-gray-600 text-sm">Studi Kasus Kompleks</p>
+      </div>
+      <div class="p-6"><!-- Case Description -->
+       <div class="bg-rose-50 rounded-xl p-5 mb-6 border border-rose-200">
+        <div class="flex items-start gap-3 mb-4"><span class="text-2xl">⚗️</span>
+         <div>
+          <h3 class="font-heading font-bold text-gray-800">Materi: Kesetimbangan Kimia</h3>
+          <p class="text-sm text-gray-600 mt-1">Masalah umum yang dihadapi:</p>
+         </div>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-3">
+         <div class="bg-white rounded-lg p-3 border border-rose-200"><span class="text-red-500 font-bold text-sm">❌</span> <span class="text-sm text-gray-700 ml-2">Siswa menghafal rumus Kc</span>
+         </div>
+         <div class="bg-white rounded-lg p-3 border border-rose-200"><span class="text-red-500 font-bold text-sm">❌</span> <span class="text-sm text-gray-700 ml-2">Tidak memahami dinamika reaksi reversibel</span>
+         </div>
+        </div>
+       </div><!-- Group Task -->
+       <div class="bg-white rounded-xl p-5 border border-pink-200">
+        <h3 class="font-heading font-bold text-gray-800 mb-4 flex items-center gap-2"><span class="w-8 h-8 bg-pink-100 rounded-lg flex items-center justify-center text-pink-600">📋</span> Tugas Kelompok</h3>
+        <p class="text-sm text-gray-600 mb-4">Rancang pembelajaran menggunakan:</p>
+        <div class="grid sm:grid-cols-3 gap-3 mb-6">
+         <div class="bg-pink-50 rounded-lg p-3 text-center"><span class="text-2xl block mb-1">1️⃣</span>
+          <p class="text-sm font-medium text-gray-700">1 Strategi Utama</p>
+         </div>
+         <div class="bg-rose-50 rounded-lg p-3 text-center"><span class="text-2xl block mb-1">2️⃣</span>
+          <p class="text-sm font-medium text-gray-700">1 Strategi Pendukung</p>
+         </div>
+         <div class="bg-red-50 rounded-lg p-3 text-center"><span class="text-2xl block mb-1">🧠</span>
+          <p class="text-sm font-medium text-gray-700">Model Pemrosesan Informasi</p>
+         </div>
+        </div><!-- Design Form -->
+        <div class="space-y-4">
+         <div class="bg-gray-50 rounded-lg p-4"><label class="font-bold text-gray-700 text-sm block mb-2">Strategi Utama:</label> <select class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white" onchange="saveChallengeAnswer('main_strategy', this.value)"> <option value="">Pilih strategi utama...</option> <option value="direct">Direct Instruction</option> <option value="indirect">Indirect Instruction</option> <option value="interactive">Interactive Instruction</option> <option value="experiential">Experiential Learning</option> <option value="independent">Independent Study</option> </select>
+         </div>
+         <div class="bg-gray-50 rounded-lg p-4"><label class="font-bold text-gray-700 text-sm block mb-2">Strategi Pendukung:</label> <select class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white" onchange="saveChallengeAnswer('support_strategy', this.value)"> <option value="">Pilih strategi pendukung...</option> <option value="direct">Direct Instruction</option> <option value="indirect">Indirect Instruction</option> <option value="interactive">Interactive Instruction</option> <option value="experiential">Experiential Learning</option> <option value="independent">Independent Study</option> </select>
+         </div>
+         <div class="bg-gray-50 rounded-lg p-4"><label class="font-bold text-gray-700 text-sm block mb-2">Rancangan Pembelajaran:</label> <textarea class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none" rows="4" placeholder="Deskripsikan rancangan pembelajaran Anda..." onchange="saveChallengeAnswer('design', this.value)"></textarea>
+         </div>
+        </div>
+        <div class="mt-4 bg-amber-50 rounded-lg p-3 border border-amber-200"><span class="text-amber-700 font-bold text-sm">⏱️ Presentasi: </span> <span class="text-sm text-gray-700">15 menit per kelompok</span>
+        </div>
+       </div><button onclick="completeSection(4)" class="mt-6 w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 rounded-xl font-bold hover:opacity-90 transition-opacity"> ✓ Selesaikan Bagian Ini </button>
+      </div>
+     </div>
+    </section><!-- Section 6: Formative Quiz -->
+    <section id="section-5" class="mb-8 fade-in">
+     <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+      <div class="bg-gradient-to-r from-indigo-200 via-violet-200 to-purple-200 p-6">
+       <div class="flex items-center gap-2 mb-2"><span class="bg-white/80 text-indigo-600 text-xs font-bold px-2 py-1 rounded-full">BAGIAN 6</span>
+       </div>
+       <h2 class="font-heading text-2xl font-bold text-gray-800 mb-2">Evaluasi Formatif Interaktif</h2>
+       <p class="text-gray-600 text-sm">Quiz Konseptual</p>
+      </div>
+      <div class="p-6">
+       <div id="quiz-container"><!-- Quiz Progress -->
+        <div class="flex items-center justify-between mb-6"><span class="text-sm text-gray-600">Pertanyaan <span id="quiz-current">1</span> dari <span id="quiz-total">3</span></span>
+         <div class="flex gap-1">
+          <div class="quiz-dot w-3 h-3 rounded-full bg-violet-500" data-q="0"></div>
+          <div class="quiz-dot w-3 h-3 rounded-full bg-gray-300" data-q="1"></div>
+          <div class="quiz-dot w-3 h-3 rounded-full bg-gray-300" data-q="2"></div>
+         </div>
+        </div><!-- Question 1 -->
+        <div class="quiz-question" data-question="0">
+         <div class="bg-violet-50 rounded-xl p-5 mb-4">
+          <h3 class="font-heading font-bold text-gray-800 mb-2">Pertanyaan 1:</h3>
+          <p class="text-gray-700">Mengapa Direct Instruction efektif untuk materi algoritmik?</p>
+         </div>
+         <div class="space-y-2">
+          <div class="quiz-option bg-white rounded-lg p-4 border border-gray-200 hover:border-violet-400" onclick="selectQuizOption(0, 0)" data-correct="true"><span class="font-bold text-violet-600 mr-2">A.</span> <span>Karena materi algoritmik membutuhkan langkah-langkah sistematis dan terstruktur yang dapat dijelaskan secara eksplisit</span>
+          </div>
+          <div class="quiz-option bg-white rounded-lg p-4 border border-gray-200 hover:border-violet-400" onclick="selectQuizOption(0, 1)"><span class="font-bold text-violet-600 mr-2">B.</span> <span>Karena siswa lebih suka mendengarkan ceramah</span>
+          </div>
+          <div class="quiz-option bg-white rounded-lg p-4 border border-gray-200 hover:border-violet-400" onclick="selectQuizOption(0, 2)"><span class="font-bold text-violet-600 mr-2">C.</span> <span>Karena tidak memerlukan persiapan yang banyak</span>
+          </div>
+         </div>
+        </div><!-- Question 2 -->
+        <div class="quiz-question hidden" data-question="1">
+         <div class="bg-violet-50 rounded-xl p-5 mb-4">
+          <h3 class="font-heading font-bold text-gray-800 mb-2">Pertanyaan 2:</h3>
+          <p class="text-gray-700">Bagaimana experiential learning membantu retensi jangka panjang?</p>
+         </div>
+         <div class="space-y-2">
+          <div class="quiz-option bg-white rounded-lg p-4 border border-gray-200 hover:border-violet-400" onclick="selectQuizOption(1, 0)"><span class="font-bold text-violet-600 mr-2">A.</span> <span>Dengan memberikan lebih banyak tugas rumah</span>
+          </div>
+          <div class="quiz-option bg-white rounded-lg p-4 border border-gray-200 hover:border-violet-400" onclick="selectQuizOption(1, 1)" data-correct="true"><span class="font-bold text-violet-600 mr-2">B.</span> <span>Melalui pengalaman langsung yang melibatkan multiple senses dan emosi, menciptakan koneksi memori yang lebih kuat</span>
+          </div>
+          <div class="quiz-option bg-white rounded-lg p-4 border border-gray-200 hover:border-violet-400" onclick="selectQuizOption(1, 2)"><span class="font-bold text-violet-600 mr-2">C.</span> <span>Dengan mengulang materi berkali-kali</span>
+          </div>
+         </div>
+        </div><!-- Question 3 -->
+        <div class="quiz-question hidden" data-question="2">
+         <div class="bg-violet-50 rounded-xl p-5 mb-4">
+          <h3 class="font-heading font-bold text-gray-800 mb-2">Pertanyaan 3:</h3>
+          <p class="text-gray-700">Kapan model pemrosesan informasi lebih unggul dibanding diskusi biasa?</p>
+         </div>
+         <div class="space-y-2">
+          <div class="quiz-option bg-white rounded-lg p-4 border border-gray-200 hover:border-violet-400" onclick="selectQuizOption(2, 0)"><span class="font-bold text-violet-600 mr-2">A.</span> <span>Ketika siswa sudah menguasai materi</span>
+          </div>
+          <div class="quiz-option bg-white rounded-lg p-4 border border-gray-200 hover:border-violet-400" onclick="selectQuizOption(2, 1)"><span class="font-bold text-violet-600 mr-2">B.</span> <span>Ketika waktu pembelajaran terbatas</span>
+          </div>
+          <div class="quiz-option bg-white rounded-lg p-4 border border-gray-200 hover:border-violet-400" onclick="selectQuizOption(2, 2)" data-correct="true"><span class="font-bold text-violet-600 mr-2">C.</span> <span>Ketika materi membutuhkan pembentukan konsep dan kategorisasi sistematis dari data/contoh yang kompleks</span>
+          </div>
+         </div>
+        </div><!-- Navigation -->
+        <div class="flex justify-between mt-6"><button onclick="prevQuestion()" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50" id="prev-btn" disabled> ← Sebelumnya </button> <button onclick="nextQuestion()" class="px-4 py-2 rounded-lg bg-violet-500 text-white hover:bg-violet-600 transition-colors" id="next-btn"> Selanjutnya → </button>
+        </div><!-- Quiz Result -->
+        <div id="quiz-result" class="hidden mt-6 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-6 border border-emerald-200">
+         <h3 class="font-heading font-bold text-emerald-800 text-xl mb-2">🎉 Quiz Selesai!</h3>
+         <p class="text-gray-700">Skor Anda: <span id="quiz-score" class="font-bold text-emerald-600">0</span>/3</p>
+        </div>
+       </div><button onclick="completeSection(5)" class="mt-6 w-full bg-gradient-to-r from-indigo-500 to-violet-500 text-white py-3 rounded-xl font-bold hover:opacity-90 transition-opacity"> ✓ Selesaikan Bagian Ini </button>
+      </div>
+     </div>
+    </section><!-- Section 7: Professional Reflection -->
+    <section id="section-6" class="mb-8 fade-in">
+     <div class="bg-white/90 backdrop-blur rounded-2xl shadow-lg overflow-hidden">
+      <div class="bg-gradient-to-r from-fuchsia-200 via-pink-200 to-rose-200 p-6">
+       <div class="flex items-center gap-2 mb-2"><span class="bg-white/80 text-fuchsia-600 text-xs font-bold px-2 py-1 rounded-full">BAGIAN 7</span>
+       </div>
+       <h2 class="font-heading text-2xl font-bold text-gray-800 mb-2">Refleksi Profesional</h2>
+       <p class="text-gray-600 text-sm">Esai Reflektif</p>
+      </div>
+      <div class="p-6">
+       <div class="bg-fuchsia-50 rounded-xl p-5 mb-6 border border-fuchsia-200">
+        <h3 class="font-heading font-bold text-gray-800 mb-3 flex items-center gap-2"><span class="text-xl">✍️</span> Tugas Refleksi</h3>
+        <p class="text-gray-700 text-sm mb-4">Tuliskan esai reflektif yang menjawab pertanyaan berikut:</p>
+        <div class="bg-white rounded-lg p-4 border border-fuchsia-200">
+         <p class="text-gray-700 italic">"Strategi mana yang paling sesuai dengan gaya mengajar Anda? Jelaskan alasannya berdasarkan karakteristik diri dan materi kimia yang akan Anda ajarkan."</p>
+        </div>
+       </div>
+       <div class="space-y-4">
+        <div class="bg-white rounded-lg p-4 border border-gray-200"><label class="font-bold text-gray-700 text-sm block mb-2">Nama:</label> <input type="text" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg" placeholder="Masukkan nama Anda..." id="reflection-name" onchange="saveReflection('name', this.value)">
+        </div>
+        <div class="bg-white rounded-lg p-4 border border-gray-200"><label class="font-bold text-gray-700 text-sm block mb-2">Esai Reflektif:</label> <textarea class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none" rows="8" placeholder="Tuliskan refleksi Anda di sini... (Minimal 200 kata)" id="reflection-essay" onchange="saveReflection('essay', this.value)"></textarea>
+         <div class="flex justify-between mt-2"><span class="text-xs text-gray-500">Minimal 200 kata</span> <span class="text-xs text-gray-500" id="word-count">0 kata</span>
+         </div>
+        </div>
+       </div><button onclick="submitReflection()" class="mt-6 w-full bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white py-3 rounded-xl font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+        </svg> Kirim Refleksi </button>
+       <div id="submission-success" class="hidden mt-4 bg-emerald-50 rounded-xl p-4 border border-emerald-200">
+        <div class="flex items-center gap-3"><span class="text-2xl">✅</span>
+         <div>
+          <h4 class="font-bold text-emerald-800">Refleksi Berhasil Disimpan!</h4>
+          <p class="text-sm text-emerald-600">Terima kasih telah menyelesaikan modul ini.</p>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </section><!-- Completion Certificate -->
+    <section id="completion-section" class="mb-8 hidden">
+     <div class="bg-gradient-to-r from-amber-100 via-yellow-100 to-orange-100 rounded-2xl shadow-lg p-8 text-center border-4 border-amber-300">
+      <div class="text-6xl mb-4">
+       🏆
+      </div>
+      <h2 class="font-heading text-3xl font-bold text-amber-800 mb-2">Selamat!</h2>
+      <p class="text-gray-700 mb-4">Anda telah menyelesaikan Modul Interaktif</p>
+      <p class="font-heading text-xl font-bold text-amber-700 mb-6">Strategi &amp; Model Pembelajaran Kimia</p>
+      <div class="inline-block bg-white rounded-xl px-6 py-3 shadow-md">
+       <p class="text-sm text-gray-600">Progress Akhir</p>
+       <p class="text-3xl font-bold text-emerald-600" id="final-progress">100%</p>
+      </div>
+     </div>
+    </section>
+   </main><!-- Notes Panel (Slide-in) -->
+   <div id="notes-panel" class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+    <div class="p-4 border-b border-gray-200 bg-gradient-to-r from-violet-50 to-pink-50">
+     <div class="flex items-center justify-between">
+      <h3 class="font-heading font-bold text-gray-800">📝 Catatan Saya</h3><button onclick="toggleNotes()" class="p-1 hover:bg-gray-100 rounded">
+       <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+       </svg></button>
+     </div>
+    </div>
+    <div class="p-4">
+     <div class="mb-4"><textarea id="new-note" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg resize-none" rows="3" placeholder="Tulis catatan baru..."></textarea> <button onclick="addNote()" class="mt-2 w-full bg-violet-500 hover:bg-violet-600 text-white py-2 rounded-lg text-sm font-medium transition-colors"> + Tambah Catatan </button>
+     </div>
+     <div id="notes-list" class="space-y-3"><!-- Notes will be rendered here -->
+     </div>
+    </div>
+   </div><!-- Toast Notification -->
+   <div id="toast" class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50"><span id="toast-message"></span>
+   </div>
+  </div>
+  <script>
+    // Default configuration
+    const defaultConfig = {
+      main_title: 'Strategi Pembelajaran Kimia',
+      subtitle: 'Modul Interaktif',
+      background_color: '#fef3e2',
+      surface_color: '#ffffff',
+      text_color: '#1f2937',
+      primary_color: '#8b5cf6',
+      secondary_color: '#ec4899',
+      font_family: 'Nunito'
+    };
+
+    // State management
+    let currentSection = 0;
+    let completedSections = new Set();
+    let quizAnswers = {};
+    let currentQuizQuestion = 0;
+    let timerInterval = null;
+    let userNotes = [];
+    let userResponses = [];
+
+    // Initialize Element SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: async (config) => {
+          // Update title
+          const titleEl = document.getElementById('main-title');
+          if (titleEl) titleEl.textContent = config.main_title || defaultConfig.main_title;
+          
+          // Update subtitle
+          const subtitleEl = document.getElementById('subtitle');
+          if (subtitleEl) subtitleEl.textContent = config.subtitle || defaultConfig.subtitle;
+          
+          // Apply font family
+          const fontFamily = config.font_family || defaultConfig.font_family;
+          document.body.style.fontFamily = `${fontFamily}, sans-serif`;
+        },
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.background_color || defaultConfig.background_color,
+              set: (value) => { config.background_color = value; window.elementSdk.setConfig({ background_color: value }); }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (value) => { config.surface_color = value; window.elementSdk.setConfig({ surface_color: value }); }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => { config.text_color = value; window.elementSdk.setConfig({ text_color: value }); }
+            },
+            {
+              get: () => config.primary_color || defaultConfig.primary_color,
+              set: (value) => { config.primary_color = value; window.elementSdk.setConfig({ primary_color: value }); }
+            },
+            {
+              get: () => config.secondary_color || defaultConfig.secondary_color,
+              set: (value) => { config.secondary_color = value; window.elementSdk.setConfig({ secondary_color: value }); }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => { config.font_family = value; window.elementSdk.setConfig({ font_family: value }); }
+          },
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ['main_title', config.main_title || defaultConfig.main_title],
+          ['subtitle', config.subtitle || defaultConfig.subtitle]
+        ])
+      });
+    }
+
+    // Initialize Data SDK
+    const dataHandler = {
+      onDataChanged(data) {
+        userNotes = data.filter(d => d.type === 'note');
+        userResponses = data.filter(d => d.type === 'response');
+        renderNotes();
+        updateProgress();
+      }
+    };
+
+    if (window.dataSdk) {
+      window.dataSdk.init(dataHandler);
+    }
+
+    // Navigation functions
+    function navigateToSection(index) {
+      currentSection = index;
+      document.querySelectorAll('.nav-item').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+      document.getElementById(`section-${index}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function completeSection(index) {
+      completedSections.add(index);
+      updateProgress();
+      showToast('Bagian selesai! 🎉');
+      
+      // Check if all sections are completed
+      if (completedSections.size === 7) {
+        document.getElementById('completion-section').classList.remove('hidden');
+        document.getElementById('completion-section').scrollIntoView({ behavior: 'smooth' });
+      } else if (index < 6) {
+        setTimeout(() => navigateToSection(index + 1), 500);
+      }
+    }
+
+    function updateProgress() {
+      const progress = Math.round((completedSections.size / 7) * 100);
+      document.getElementById('progress-text').textContent = `${progress}%`;
+      document.getElementById('final-progress').textContent = `${progress}%`;
+    }
+
+    // Reflection toggle
+    function toggleReflection(element) {
+      const answer = element.querySelector('.reflection-answer');
+      const arrow = element.querySelector('svg');
+      answer.classList.toggle('hidden');
+      arrow.classList.toggle('rotate-180');
+    }
+
+    // Timer functions
+    function startTimer(minutes) {
+      if (timerInterval) clearInterval(timerInterval);
+      let timeLeft = minutes * 60;
+      
+      updateTimerDisplay(timeLeft);
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay(timeLeft);
+        
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          showToast('Waktu diskusi selesai! ⏰');
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      document.getElementById('timer-display').textContent = 
+        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Strategy tabs
+    function showStrategy(index) {
+      document.querySelectorAll('.strategy-tab').forEach((tab, i) => {
+        tab.classList.toggle('active', i === index);
+      });
+      document.querySelectorAll('.strategy-panel').forEach((panel, i) => {
+        panel.classList.toggle('hidden', i !== index);
+      });
+    }
+
+    // Quiz functions
+    function selectQuizOption(question, option) {
+      const questionEl = document.querySelector(`.quiz-question[data-question="${question}"]`);
+      const options = questionEl.querySelectorAll('.quiz-option');
+      
+      options.forEach((opt, i) => {
+        opt.classList.remove('selected', 'correct', 'incorrect');
+        if (i === option) {
+          opt.classList.add('selected');
+          const isCorrect = opt.hasAttribute('data-correct');
+          setTimeout(() => {
+            opt.classList.add(isCorrect ? 'correct' : 'incorrect');
+            if (isCorrect) {
+              opt.classList.add('celebration');
+            } else {
+              opt.classList.add('shake');
+            }
+          }, 200);
+          quizAnswers[question] = isCorrect;
+        }
+      });
+    }
+
+    function nextQuestion() {
+      if (currentQuizQuestion < 2) {
+        currentQuizQuestion++;
+        updateQuizUI();
+      } else {
+        showQuizResult();
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQuizQuestion > 0) {
+        currentQuizQuestion--;
+        updateQuizUI();
+      }
+    }
+
+    function updateQuizUI() {
+      document.querySelectorAll('.quiz-question').forEach((q, i) => {
+        q.classList.toggle('hidden', i !== currentQuizQuestion);
+      });
+      document.querySelectorAll('.quiz-dot').forEach((dot, i) => {
+        dot.classList.toggle('bg-violet-500', i <= currentQuizQuestion);
+        dot.classList.toggle('bg-gray-300', i > currentQuizQuestion);
+      });
+      document.getElementById('quiz-current').textContent = currentQuizQuestion + 1;
+      document.getElementById('prev-btn').disabled = currentQuizQuestion === 0;
+      document.getElementById('next-btn').textContent = currentQuizQuestion === 2 ? 'Selesai' : 'Selanjutnya →';
+    }
+
+    function showQuizResult() {
+      const score = Object.values(quizAnswers).filter(Boolean).length;
+      document.getElementById('quiz-score').textContent = score;
+      document.getElementById('quiz-result').classList.remove('hidden');
+      document.getElementById('next-btn').disabled = true;
+    }
+
+    // Drag and drop for classification
+    function initDragDrop() {
+      const dragItems = document.querySelectorAll('.drag-item');
+      const dropZones = document.querySelectorAll('.drop-zone');
+
+      dragItems.forEach(item => {
+        item.addEventListener('dragstart', (e) => {
+          e.dataTransfer.setData('text/plain', e.target.outerHTML);
+          e.dataTransfer.setData('type', e.target.dataset.type);
+          setTimeout(() => item.classList.add('dragging'), 0);
+        });
+
+        item.addEventListener('dragend', () => {
+          item.classList.remove('dragging');
+        });
+      });
+
+      dropZones.forEach(zone => {
+        zone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          zone.classList.add('drag-over');
+        });
+
+        zone.addEventListener('dragleave', () => {
+          zone.classList.remove('drag-over');
+        });
+
+        zone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          zone.classList.remove('drag-over');
+          const html = e.dataTransfer.getData('text/plain');
+          const container = zone.querySelector('.dropped-items');
+          
+          // Check if item already exists in this zone
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = html;
+          const itemText = tempDiv.textContent.trim();
+          
+          if (!container.innerHTML.includes(itemText)) {
+            const newItem = document.createElement('div');
+            newItem.className = 'bg-white px-2 py-1 rounded text-xs shadow-sm';
+            newItem.textContent = itemText;
+            newItem.dataset.type = e.dataTransfer.getData('type');
+            container.appendChild(newItem);
+          }
+        });
+      });
+    }
+
+    function checkClassification() {
+      const dropZones = document.querySelectorAll('.drop-zone');
+      let correct = 0;
+      let total = 0;
+
+      dropZones.forEach(zone => {
+        const category = zone.dataset.category;
+        const items = zone.querySelectorAll('.dropped-items > div');
+        
+        items.forEach(item => {
+          total++;
+          if (item.dataset.type === category) {
+            correct++;
+            item.classList.add('bg-emerald-100', 'text-emerald-800');
+          } else {
+            item.classList.add('bg-red-100', 'text-red-800');
+          }
+        });
+      });
+
+      const resultEl = document.getElementById('classification-result');
+      resultEl.classList.remove('hidden');
+      resultEl.className = `mt-3 p-3 rounded-lg text-sm ${correct === total && total > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`;
+      resultEl.textContent = total > 0 ? `Hasil: ${correct}/${total} benar` : 'Seret item ke kategori yang sesuai terlebih dahulu';
+    }
+
+    // Notes functions
+    function toggleNotes() {
+      const panel = document.getElementById('notes-panel');
+      panel.classList.toggle('translate-x-full');
+    }
+
+    async function addNote() {
+      const noteInput = document.getElementById('new-note');
+      const content = noteInput.value.trim();
+      
+      if (!content) {
+        showToast('Tuliskan catatan terlebih dahulu');
+        return;
+      }
+
+      if (userNotes.length >= 999) {
+        showToast('Batas catatan tercapai (999)');
+        return;
+      }
+
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create({
+          id: Date.now().toString(),
+          type: 'note',
+          section: currentSection.toString(),
+          content: content,
+          timestamp: new Date().toISOString()
+        });
+
+        if (result.isOk) {
+          noteInput.value = '';
+          showToast('Catatan disimpan! 📝');
+        } else {
+          showToast('Gagal menyimpan catatan');
+        }
+      }
+    }
+
+    async function deleteNote(backendId) {
+      const note = userNotes.find(n => n.__backendId === backendId);
+      if (note && window.dataSdk) {
+        const result = await window.dataSdk.delete(note);
+        if (result.isOk) {
+          showToast('Catatan dihapus');
+        }
+      }
+    }
+
+    function renderNotes() {
+      const container = document.getElementById('notes-list');
+      if (!container) return;
+      
+      container.innerHTML = userNotes.map(note => `
+        <div class="note-card bg-gray-50 rounded-lg p-3 border border-gray-200">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs text-violet-600 font-medium">Bagian ${parseInt(note.section) + 1}</span>
+            <button onclick="deleteNote('${note.__backendId}')" class="text-gray-400 hover:text-red-500">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          <p class="text-sm text-gray-700">${note.content}</p>
+          <p class="text-xs text-gray-400 mt-2">${new Date(note.timestamp).toLocaleDateString('id-ID')}</p>
+        </div>
+      `).join('');
+    }
+
+    // Save functions for various inputs
+    async function saveResponse(section, type, content) {
+      if (!window.dataSdk || !content) return;
+      
+      const existingResponse = userResponses.find(r => r.section === section && r.type === type);
+      
+      if (existingResponse) {
+        existingResponse.content = content;
+        await window.dataSdk.update(existingResponse);
+      } else {
+        if (userResponses.length >= 999) return;
+        await window.dataSdk.create({
+          id: Date.now().toString(),
+          type: 'response',
+          section: section,
+          content: content,
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
+    function updateObservation(strategy, index, checked) {
+      saveResponse('observation', `${strategy}_${index}`, checked.toString());
+    }
+
+    function updateObservationNote(strategy, index, value) {
+      saveResponse('observation_note', `${strategy}_${index}`, value);
+    }
+
+    function saveIndirectAnswer(index, value) {
+      saveResponse('indirect', index.toString(), value);
+    }
+
+    function saveProjectAnswer(index, value) {
+      saveResponse('project', index.toString(), value);
+    }
+
+    function saveMatrixAnswer(row, type, value) {
+      saveResponse('matrix', `${row}_${type}`, value);
+    }
+
+    function saveChallengeAnswer(type, value) {
+      saveResponse('challenge', type, value);
+    }
+
+    function saveColoidDefinition(value) {
+      saveResponse('coloid', 'definition', value);
+    }
+
+    function saveReflection(type, value) {
+      saveResponse('reflection', type, value);
+      
+      if (type === 'essay') {
+        const wordCount = value.trim().split(/\s+/).filter(Boolean).length;
+        document.getElementById('word-count').textContent = `${wordCount} kata`;
+      }
+    }
+
+    async function submitReflection() {
+      const name = document.getElementById('reflection-name').value.trim();
+      const essay = document.getElementById('reflection-essay').value.trim();
+      
+      if (!name || !essay) {
+        showToast('Lengkapi nama dan esai terlebih dahulu');
+        return;
+      }
+
+      const wordCount = essay.split(/\s+/).filter(Boolean).length;
+      if (wordCount < 200) {
+        showToast(`Esai minimal 200 kata (saat ini: ${wordCount} kata)`);
+        return;
+      }
+
+      await saveResponse('reflection', 'name', name);
+      await saveResponse('reflection', 'essay', essay);
+      
+      document.getElementById('submission-success').classList.remove('hidden');
+      completeSection(6);
+      showToast('Refleksi berhasil disimpan! 🎉');
+    }
+
+    // Toast notification
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+      toastMessage.textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+      initDragDrop();
+      updateProgress();
+      
+      // Set first nav item as active
+      document.querySelector('.nav-item[data-section="0"]').classList.add('active');
+    });
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9d3ae79d218386a1',t:'MTc3MjA2MTMyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
